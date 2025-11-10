@@ -1,31 +1,46 @@
+version: "3.8"
+
 services:
   db:
     image: mysql:8.0
     container_name: mysql_container
-    restart: always
+    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: crud_db
+      MYSQL_USER: crud_user
+      MYSQL_PASSWORD: crud_pass
     ports:
       - "3306:3306"
     volumes:
       - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p\"$MYSQL_ROOT_PASSWORD\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: express_app
+    restart: on-failure
     ports:
       - "3000:3000"
     environment:
-      - DB_HOST=db
-      - DB_USER=root
-      - DB_PASSWORD=password
-      - DB_NAME=crud_db
-      - DB_PORT=3306
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_USER: crud_user
+      DB_PASSWORD: crud_pass
+      DB_NAME: crud_db
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    volumes:
+      - ./:/usr/src/app
 
 volumes:
   dbdata:
-
-
+    driver: local
