@@ -1,12 +1,23 @@
-FROM node:18
+# Gunakan image resmi Node LTS
+FROM node:18-alpine
 
-WORKDIR /src
+# Set working directory
+WORKDIR /usr/src/app
 
+# Copy package files first untuk memanfaatkan cache layer Docker
 COPY package*.json ./
-RUN npm install
 
+# Install dependencies
+RUN npm ci --only=production
+
+# Copy semua file aplikasi
 COPY . .
 
+# Jika perlu build (mis. aplikasi React/TS)
+# RUN npm run build
+
+# Ekspos port aplikasi (sesuaikan)
 EXPOSE 3000
 
-CMD ["npm", "start"]
+# Perintah default untuk menjalankan aplikasi
+CMD ["node", "index.js"]
