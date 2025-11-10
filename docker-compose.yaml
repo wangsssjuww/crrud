@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   db:
     image: mysql:8.0
@@ -27,4 +29,5 @@ services:
 
 volumes:
   dbdata:
+
 
